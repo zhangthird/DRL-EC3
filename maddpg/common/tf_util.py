@@ -234,7 +234,7 @@ def scope_vars(scope, trainable_only=False):
 
 def scope_name():
     """Returns the name of current scope as a string, e.g. deepq/q_func"""
-    return tf.get_variable_scope().name
+    return tf.compat.v1.get_variable_scope().name
 
 
 def absolute_scope_name(relative_scope_name):

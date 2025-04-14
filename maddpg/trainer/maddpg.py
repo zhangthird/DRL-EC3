@@ -41,7 +41,7 @@ def make_update_exp(vals, target_vals):
 
 
 def CNN(state_input, reuse=tf.compat.v1.AUTO_REUSE, scope='CNN'):
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf.compat.v1.variable_scope(scope, reuse=reuse):
         # 使用Keras层
         state = layers.Conv2D(16, 3, activation='relu', strides=2, padding='VALID')(state_input)
         state = layers.Conv2D(32, 3, activation='relu', strides=2, padding='VALID')(state)
@@ -55,7 +55,7 @@ def CNN(state_input, reuse=tf.compat.v1.AUTO_REUSE, scope='CNN'):
 
 
 def RNN(state_input, reuse=tf.compat.v1.AUTO_REUSE, scope='RNN', cell_size=None, initial_state=None):
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf.compat.v1.variable_scope(scope, reuse=reuse):
         # 使用Keras的LSTM层代替tf.contrib.rnn
         rnn_cell = tf.keras.layers.LSTMCell(units=cell_size)
         lstm_layer = tf.keras.layers.RNN(rnn_cell, return_sequences=True, return_state=True)
@@ -68,7 +68,7 @@ def RNN(state_input, reuse=tf.compat.v1.AUTO_REUSE, scope='RNN', cell_size=None,
 
 
 def mlp_model(input, num_outputs, scope, reuse=False, num_units=64, ac_fn=None):
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf.compat.v1.variable_scope(scope, reuse=reuse):
         out = input
 
         # 用Keras Dense层替代fully_connected
@@ -98,7 +98,7 @@ def mlp_model(input, num_outputs, scope, reuse=False, num_units=64, ac_fn=None):
 
 def p_train(make_obs_ph_n, act_space_n, p_index, p_func, q_func, optimizer, global_step, grad_norm_clipping=None, local_q_func=False,
             num_units=64, scope="trainer", reuse=None, args=None):
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf.compat.v1.variable_scope(scope, reuse=reuse):
         act_pdtype_n = [make_pdtype(act_space) for act_space in act_space_n]
         obs_ph_n = make_obs_ph_n
         act_ph_n = [act_pdtype_n[i].sample_placeholder([None], name="action" + str(i)) for i in range(len(act_space_n))]
@@ -164,7 +164,7 @@ def p_train(make_obs_ph_n, act_space_n, p_index, p_func, q_func, optimizer, glob
 
 def q_train(make_obs_ph_n, act_space_n, q_index, q_func, optimizer, global_step, grad_norm_clipping=None, local_q_func=False,
             scope="trainer", reuse=None, num_units=64, args=None):
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf.compat.v1.variable_scope(scope, reuse=reuse):
         act_pdtype_n = [make_pdtype(act_space) for act_space in act_space_n]
         obs_ph_n = make_obs_ph_n
 
