@@ -124,11 +124,11 @@ def p_train(make_obs_ph_n, act_space_n, p_index, p_func, q_func, optimizer, glob
         cnn_obs_ph_n = []
         for obs_ph in obs_ph_n:
             if args.rnn_length > 0:
-                cnn_output = tf.reshape(CNN(state_input=obs_ph, scope='q_func'), [args.rnn_length, -1, 64 * 9 * 9])
-                cell_out, _ = RNN(state_input=cnn_output, scope='q_func', cell_size=args.rnn_cell_size)
+                cnn_output = tf.reshape(CNN(state_input=obs_ph, scope='p_observation_encoder'), [args.rnn_length, -1, 64 * 9 * 9])
+                cell_out, _ = RNN(state_input=cnn_output, scope='p_observation_encoder', cell_size=args.rnn_cell_size)
                 cnn_obs_ph_n.append(cell_out)
             else:
-                cnn_obs_ph_n.append(CNN(state_input=obs_ph, scope='q_func'))
+                cnn_obs_ph_n.append(CNN(state_input=obs_ph, scope='p_observation_encoder'))
 
         q_input = tf.concat(cnn_obs_ph_n + act_input_n, 1)
         if local_q_func:
