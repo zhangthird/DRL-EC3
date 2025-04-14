@@ -1,6 +1,9 @@
+# 替换 tf.app.flags 的导入
+from absl import flags as tf_flags
 import tensorflow as tf
 
-flags = tf.app.flags
+# 使用 absl.flags 替代 tf.app.flags
+flags = tf_flags
 FLAGS = flags.FLAGS
 
 # map info
