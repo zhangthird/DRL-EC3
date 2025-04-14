@@ -4,6 +4,22 @@ import os
 import tensorflow as tf
 import time
 
+# import sys
+
+# 添加项目根目录到 Python 路径
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 然后再导入 maddpg 模块
+
+# 确保兼容性
+if hasattr(tf, 'function'):
+    # TF 2.x
+    tf1 = tf.compat.v1
+    tf1.disable_eager_execution()
+else:
+    # TF 1.x
+    tf1 = tf
+
 import maddpg.common.tf_util as U
 from experiments.env0 import log0 as Log
 from experiments.env0.data_collection0 import Env
@@ -116,15 +132,15 @@ def train(arglist, log):
         # Create summary
         summary = Summary(sess, envs[0].log_dir)
         for i in range(envs[0].n):
-            summary.add_variable(tf.Variable(0.), 'reward_%d' % i)
-            summary.add_variable(tf.Variable(0.), 'loss_%d' % i)
-            summary.add_variable(tf.Variable(0.), 'wall_%d' % i)
-            summary.add_variable(tf.Variable(0.), 'energy_%d' % i)
-            summary.add_variable(tf.Variable(0.), 'gained_info_%d' % i)
-        summary.add_variable(tf.Variable(0.), 'buffer_size')
-        summary.add_variable(tf.Variable(0.), 'acc_reward')
-        summary.add_variable(tf.Variable(0.), 'leftrewards')
-        summary.add_variable(tf.Variable(0.), 'efficiency')
+            summary.add_variable(tf1.Variable(0.), 'reward_%d' % i)
+            summary.add_variable(tf1.Variable(0.), 'loss_%d' % i)
+            summary.add_variable(tf1.Variable(0.), 'wall_%d' % i)
+            summary.add_variable(tf1.Variable(0.), 'energy_%d' % i)
+            summary.add_variable(tf1.Variable(0.), 'gained_info_%d' % i)
+        summary.add_variable(tf1.Variable(0.), 'buffer_size')
+        summary.add_variable(tf1.Variable(0.), 'acc_reward')
+        summary.add_variable(tf1.Variable(0.), 'leftrewards')
+        summary.add_variable(tf1.Variable(0.), 'efficiency')
         summary.build()
 
         # Create agent trainers
@@ -147,7 +163,7 @@ def train(arglist, log):
             U.load_state(arglist.load_dir)
 
         # 保存模型的个数 100
-        saver = tf.train.Saver(max_to_keep=arglist.model_to_keep)
+        saver = tf1.train.Saver(max_to_keep=arglist.model_to_keep)
 
         episode_rewards = [[0.0] for env in envs]  # sum of rewards for all agents
         agent_rewards = [[[0.0] for _ in range(env.n)] for env in envs]  # individual agent reward

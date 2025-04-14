@@ -4,57 +4,51 @@ import os
 import tensorflow as tf
 import multiprocessing as mp
 
+# 确保兼容性
+if hasattr(tf, 'function'):
+    # TF 2.x
+    tf1 = tf.compat.v1
+    tf1.disable_eager_execution()
+else:
+    # TF 1.x
+    tf1 = tf
 
+# 基础数学函数，这些可以保持不变
 def sum(x, axis=None, keepdims=False):
-    return tf.reduce_sum(x, axis=None if axis is None else [axis], keep_dims=keepdims)
-
+    return tf.reduce_sum(x, axis=None if axis is None else [axis], keepdims=keepdims)
 
 def mean(x, axis=None, keepdims=False):
-    return tf.reduce_mean(x, axis=None if axis is None else [axis], keep_dims=keepdims)
-
+    return tf.reduce_mean(x, axis=None if axis is None else [axis], keepdims=keepdims)
 
 def var(x, axis=None, keepdims=False):
     meanx = mean(x, axis=axis, keepdims=keepdims)
     return mean(tf.square(x - meanx), axis=axis, keepdims=keepdims)
 
-
 def std(x, axis=None, keepdims=False):
     return tf.sqrt(var(x, axis=axis, keepdims=keepdims))
 
-
 def max(x, axis=None, keepdims=False):
-    return tf.reduce_max(x, axis=None if axis is None else [axis], keep_dims=keepdims)
-
+    return tf.reduce_max(x, axis=None if axis is None else [axis], keepdims=keepdims)
 
 def min(x, axis=None, keepdims=False):
-    return tf.reduce_min(x, axis=None if axis is None else [axis], keep_dims=keepdims)
-
+    return tf.reduce_min(x, axis=None if axis is None else [axis], keepdims=keepdims)
 
 def concatenate(arrs, axis=0):
-    return tf.concat(axis=axis, values=arrs)
-
+    return tf.concat(values=arrs, axis=axis)
 
 def argmax(x, axis=None):
     return tf.argmax(x, axis=axis)
 
-
 def softmax(x, axis=None):
-    return tf.nn.softmax(x, dim=axis)
+    return tf.nn.softmax(x, axis=axis)  # 注意：在TF 2.x中，dim参数改为axis
 
-
-# ================================================================
 # Misc
-# ================================================================
-
-
 def is_placeholder(x):
-    return type(x) is tf.Tensor and len(x.op.inputs) == 0
-
+    return isinstance(x, tf1.placeholder) if hasattr(tf, 'function') else type(x) is tf.Tensor and len(x.op.inputs) == 0
 
 # ================================================================
 # Inputs
 # ================================================================
-
 
 class TfInput(object):
     def __init__(self, name="(unnamed)"):
@@ -101,7 +95,7 @@ class BatchInput(PlacholderTfInput):
         name: str
             name of the underlying placeholder
         """
-        super().__init__(tf.placeholder(dtype, [None] + list(shape), name=name))
+        super().__init__(tf1.placeholder(dtype, [None] + list(shape), name=name))
 
 
 class Uint8Input(PlacholderTfInput):
@@ -119,7 +113,7 @@ class Uint8Input(PlacholderTfInput):
             name of the underlying placeholder
         """
 
-        super().__init__(tf.placeholder(tf.uint8, [None] + list(shape), name=name))
+        super().__init__(tf1.placeholder(tf.uint8, [None] + list(shape), name=name))
         self._shape = shape
         self._output = tf.cast(super().get(), tf.float32) / 255.0
 
@@ -156,13 +150,13 @@ def huber_loss(x, delta=1.0):
 # ================================================================
 
 # 最小化loss的同时剪切梯度范围
-def minimize_and_clip(optimizer, objective, var_list,global_step, clip_val=10):
+def minimize_and_clip(optimizer, objective, var_list, global_step, clip_val=10):
     """Minimized `objective` using `optimizer` w.r.t. variables in
     `var_list` while ensure the norm of the gradients for each
     variable is clipped to `clip_val`
     """
     if clip_val is None:
-        return optimizer.minimize(objective, var_list=var_list,global_step=global_step)
+        return optimizer.minimize(objective, var_list=var_list, global_step=global_step)
     else:
         gradients = optimizer.compute_gradients(objective, var_list=var_list)
         for i, (grad, var) in enumerate(gradients):
@@ -171,7 +165,7 @@ def minimize_and_clip(optimizer, objective, var_list,global_step, clip_val=10):
                 # this operation normalizes t so that its L2-norm is
                 # less than or equal to clip_norm
                 gradients[i] = (tf.clip_by_norm(grad, clip_val), var)
-        return optimizer.apply_gradients(gradients)
+        return optimizer.apply_gradients(gradients, global_step=global_step)
 
 
 # ================================================================
@@ -180,18 +174,18 @@ def minimize_and_clip(optimizer, objective, var_list,global_step, clip_val=10):
 
 def get_session():
     """Returns recently made Tensorflow session"""
-    return tf.get_default_session()
+    return tf1.get_default_session()
 
 
 def make_session(num_cpu):
     """Returns a session that will use <num_cpu> CPU's only"""
     # 控制session使用的cpu资源
-    tf_config = tf.ConfigProto(
+    tf_config = tf1.ConfigProto(
         inter_op_parallelism_threads=num_cpu,
         intra_op_parallelism_threads=num_cpu
     )
     tf_config.gpu_options.allow_growth=True
-    return tf.Session(config=tf_config)
+    return tf1.Session(config=tf_config)
 
 
 def multi_threaded_session():
@@ -205,8 +199,8 @@ ALREADY_INITIALIZED = set()
 
 def initialize():
     """Initialize all the uninitialized variables in the global scope."""
-    new_variables = set(tf.global_variables()) - ALREADY_INITIALIZED
-    get_session().run(tf.variables_initializer(new_variables))
+    new_variables = set(tf1.global_variables()) - ALREADY_INITIALIZED
+    get_session().run(tf1.variables_initializer(new_variables))
     ALREADY_INITIALIZED.update(new_variables)
 
 
@@ -232,8 +226,8 @@ def scope_vars(scope, trainable_only=False):
     vars: [tf.Variable]
         list of variables in `scope`.
     """
-    return tf.get_collection(
-        tf.GraphKeys.TRAINABLE_VARIABLES if trainable_only else tf.GraphKeys.GLOBAL_VARIABLES,
+    return tf1.get_collection(
+        tf1.GraphKeys.TRAINABLE_VARIABLES if trainable_only else tf1.GraphKeys.GLOBAL_VARIABLES,
         scope=scope if isinstance(scope, str) else scope.name
     )
 
@@ -253,21 +247,17 @@ def absolute_scope_name(relative_scope_name):
 # ================================================================
 
 
-def load_state(fname, saver=None):
+def load_state(fname, var_list=None):
     """Load all the variables to the current session from the location <fname>"""
-    if saver is None:
-        saver = tf.train.Saver()
+    saver = tf1.train.Saver(var_list=var_list)
     saver.restore(get_session(), fname)
-    return saver
 
 
-def save_state(fname, saver=None):
+def save_state(fname, var_list=None):
     """Save all the variables in the current session to the location <fname>"""
     os.makedirs(os.path.dirname(fname), exist_ok=True)
-    if saver is None:
-        saver = tf.train.Saver()
+    saver = tf1.train.Saver(var_list=var_list)
     saver.save(get_session(), fname)
-    return saver
 
 
 # ================================================================
