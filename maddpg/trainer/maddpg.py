@@ -178,7 +178,7 @@ def q_train(make_obs_ph_n, act_space_n, q_index, q_func, optimizer, global_step,
                 cnn_obs_ph_n.append(CNN(state_input=obs_ph, scope='q_func'))
 
         act_ph_n = [act_pdtype_n[i].sample_placeholder([None], name="action" + str(i)) for i in range(len(act_space_n))]
-        target_ph = tf.placeholder(tf.float32, [None], name="target")
+        target_ph = tf.compat.v1.placeholder(tf.float32, [None], name="target")
 
         q_input = tf.concat(cnn_obs_ph_n + act_ph_n, 1)
         if local_q_func:

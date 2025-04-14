@@ -62,7 +62,7 @@ ARGUMENTS = [
 
     # TODO: Experiments
     # Ape-X
-    ["--num_actor_workers", int, 0,
+    ["--num_actor_workers", int, 1,
      "number of environments one agent can deal with. if >1, use apex ; else, use simple maddpg"],
     ["--debug_dir", str, "/debug_list/",
      "save index,reward(n-step),priority, value,wi per every sample from experience"],
