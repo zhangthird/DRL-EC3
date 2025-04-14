@@ -11,6 +11,12 @@ import time
 
 # 然后再导入 maddpg 模块
 
+
+# 启用 TensorFlow 1.x 兼容模式
+tf.compat.v1.disable_eager_execution()
+tf.compat.v1.disable_v2_behavior()
+
+
 # 确保兼容性
 if hasattr(tf, 'function'):
     # TF 2.x
