@@ -1,3 +1,4 @@
+import logging
 from experiments.env0.env_setting0 import Setting
 from experiments.image.mapM import MapM
 import os
@@ -26,9 +27,9 @@ def myint(a):
 
 
 class Env(object):
-    def __init__(self, log):
+    def __init__(self, log_dir):
         # self.tr = tracker.SummaryTracker()
-        self.sg = Setting(log)
+        self.sg = Setting(log=None)
         self.sg.log()
 
         # 6-19 00:42
@@ -36,7 +37,7 @@ class Env(object):
         self.minaction = 0
         #
 
-        self.log_dir = log.full_path
+        self.log_dir = log_dir
         # self.log_dir = mypjoin('.', self.sg.time)
         # basis
         self.mapx = self.sg.V['MAP_X']
@@ -341,7 +342,7 @@ class Env(object):
         self._mapmatrix = copy.copy(self.DATAs[:, 2])
         self.datas = self.DATAs[:, 0:2] * self.mapx
         self.totaldata = np.sum(self.DATAs[:, 2])
-        log.log(self.DATAs)
+        logging.debug(f"Initialized DATAs:\n{self.DATAs}")
 
         self._image_data = np.zeros((self.map.width, self.map.height)).astype(np.float16)
         self._image_position = np.zeros((self.sg.V['NUM_UAV'], self.map.width, self.map.height)).astype(np.float16)
@@ -685,7 +686,9 @@ class Env(object):
                 print('Rerward Nan')
                 while True:
                     pass
-        return state, reward, sum(self.dn), info,indicator
+        # return state, reward, sum(self.dn), info,indicator
+        # 返回包含每个 agent 完成状态的列表 self.dn，而不是它们的和
+        return state, reward, self.dn, info, indicator
 
     def render(self):
         print('coding...')

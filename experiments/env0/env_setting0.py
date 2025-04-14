@@ -1,5 +1,7 @@
 import os
 import time
+import logging
+
 
 class Setting(object):
     def __init__(self, log):
@@ -50,14 +52,16 @@ class Setting(object):
             'NORMALIZE': .1,
             'FACTOR': 0.1,
         }
-        self.LOG = log
-        self.time = log.time
+        self.time = str(time.strftime("%Y/%m-%d/%H-%M-%S", time.localtime()))
 
     def log(self):
         # with open(os.path.join('.', self.time + '.txt'), 'x') as file:
         #     for key, value in self.V.items():
         #         print(key, value, file=file)
-        self.LOG.log(self.V)
 
-
-
+        """Logs important settings using the standard logging module."""
+        logging.info("--- Environment Settings ---")
+        logging.info(f"Setting V: {self.V}")
+        # logging.info(f"Setting Dis Penalty Ratio: {self.dis_penalty_ratio}")
+        # Add logging for any other important settings initialized in __init__
+        # REMOVE: self.LOG.log(self.dis_penalty_ratio)

@@ -1,37 +1,54 @@
-from __future__ import print_function
+# maddpg/common/summary_tf2.py (Replacement for summary.py)
+# This file might not be needed anymore if TF2 summary API is used directly in train.py
+
+# If you still want a wrapper class (less common in TF2):
 import tensorflow as tf
+import os
+import time
 
-# 检测TF版本
-if hasattr(tf, 'function'):
-    # TF 2.x
-    tf1 = tf.compat.v1
-else:
-    # TF 1.x
-    tf1 = tf
+class SummaryWriter:
+    def __init__(self, log_dir, exp_name):
+        """
+        Initializes a TensorFlow 2 summary writer.
 
-class Summary:
-    def __init__(self, session, dir_summary):
-        self.__sess = session
-        self.__vars = {}
-        self.__ops = None
-        self.__dir = dir_summary
-        self.__writer = tf1.summary.FileWriter(dir_summary, session.graph)
+        Args:
+            log_dir: Base directory for logs.
+            exp_name: Specific experiment name for the sub-directory.
+        """
+        log_path = os.path.join(log_dir, exp_name if exp_name else time.strftime("%Y%m%d-%H%M%S"))
+        self.writer = tf.summary.create_file_writer(log_path)
+        print(f"Initialized SummaryWriter at: {log_path}")
 
-    def add_variable(self, var, name="name"):
-        tf1.summary.scalar(name, var)
-        assert name not in self.__vars, "Already has " + name
-        self.__vars[name] = var
+    def write_scalar(self, name, value, step):
+        """Writes a scalar value to TensorBoard."""
+        with self.writer.as_default():
+            tf.summary.scalar(name, value, step=step)
 
-    def build(self):
-        self.__ops = tf1.summary.merge_all()
+    def flush(self):
+        """Flushes the writer buffer."""
+        self.writer.flush()
 
-    def run(self, feed_dict, step):
-        feed_dict_final = {}
-        for key, val in feed_dict.items():
-            feed_dict_final[self.__vars[key]] = val
-        str_summary = self.__sess.run(self.__ops, feed_dict_final)
-        self.__writer.add_summary(str_summary, step)
-        self.__writer.flush()
+    def close(self):
+        """Closes the writer."""
+        self.writer.close()
 
+    def get_logdir(self):
+        """Returns the log directory path."""
+        return self.writer.get_logdir()
 
+# Usage in train.py would be:
+# from maddpg.common.summary_tf2 import SummaryWriter
+# writer = SummaryWriter(arglist.log_dir, arglist.exp_name)
+# ...
+# writer.write_scalar("reward/episode_total_reward", current_episode_reward, step=episode_count)
+# ...
+# writer.flush()
+# ...
+# writer.close()
 
+# However, the direct usage shown in the modified train.py is often preferred:
+# writer = tf.summary.create_file_writer(exp_dir)
+# with writer.as_default():
+#     tf.summary.scalar(...)
+# writer.flush()
+# writer.close()
