@@ -17,14 +17,14 @@ from maddpg.common.tf_util import setup_gpu # Optional: GPU setup utility
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Set CUDA device (consider doing this outside the script or using TF functions if needed)
-# setup_gpu("0") # Example using a utility function
+setup_gpu("0") # Example using a utility function
 
 # Hyperparameters (Keep as is, argparse handles them)
 ARGUMENTS = [
     # Environment
     ["--scenario", str, "simple_adversary", "name of the scenario script"],
     ["--max-episode-len", int, 500, "maximum episode length"],
-    ["--num-episodes", int, 50000, "number of episodes"], # Increased for typical RL
+    ["--num-episodes", int, 500, "number of episodes"], # 50000 Increased for typical RL
     ["--num-adversaries", int, 0, "number of adversaries(enemy)"],
     ["--good-policy", str, "maddpg", "policy for good agents"],
     ["--adv-policy", str, "maddpg", "policy of adversaries"],
@@ -33,14 +33,14 @@ ARGUMENTS = [
     ["--lr", float, 5e-4, "learning rate for Adam optimizer"],
     # ["--decay_rate", float, 0.99995, "learning rate exponential decay"], # Use Keras schedules instead
     ["--gamma", float, 0.95, "discount factor"],
-    ["--batch-size", int, 128, "number of samples per optimization step"], # Adjusted batch size
-    ["--num-units", int, 256, "number of units in the mlp hidden layers"], # Adjusted num units
+    ["--batch-size", int, 32, "number of samples per optimization step"], # 128 Adjusted batch size
+    ["--num-units", int, 600, "number of units in the mlp hidden layers"], # 256 Adjusted num units
 
-    # Priority Replay Buffer (weights not used)
+    # Priority Replay Buffer ( weights not used )
     ["--alpha", float, 0.5, "priority parameter"],
     ["--beta", float, 0.4, "IS parameter"],
-    ["--epsilon", float, 0.01, "a small positive constant for priorities"], # Adjusted epsilon
-    ["--buffer_size", int, 100000, "buffer size for each agent"], # Adjusted buffer size
+    ["--epsilon", float, 0.5, "a small positive constant for priorities"], # 0。01 Adjusted epsilon
+    ["--buffer_size", int, 200000, "buffer size for each agent"], # 100000 Adjusted buffer size
 
     # N-steps
     ["--N", int, 5, "steps of N-step"],
@@ -61,7 +61,7 @@ ARGUMENTS = [
     ["--exp-name", str, "maddpg_tf2_run", "name of the experiment for logging/saving"],
     ["--save-dir", str, "./results/policy/", "directory in which training state and model should be saved"],
     ["--log-dir", str, "./results/logs/", "directory for TensorBoard logs"],
-    ["--save-rate", int, 1000, "save model once every time this many episodes are completed"], # Save less frequently
+    ["--save-rate", int, 500, "save model once every time this many episodes are completed"], # Save less frequently
     ["--load-dir", str, None, # Default to None, set path to load a checkpoint
      "directory/file from which training state and model are loaded (e.g., ./results/policy/ckpt-10)"],
 
@@ -378,5 +378,6 @@ def train(arglist):
     env.close() # Close environment if necessary
 
 if __name__ == '__main__':
+    print('Let\'s train, go! go! go!')
     arglist = parse_args()
     train(arglist)

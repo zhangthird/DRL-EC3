@@ -4,15 +4,6 @@ import os
 import tensorflow as tf
 import pandas as pd
 
-# 确保兼容性
-if hasattr(tf, 'function'):
-    # TF 2.x
-    tf1 = tf.compat.v1
-    tf1.disable_eager_execution()
-else:
-    # TF 1.x
-    tf1 = tf
-
 import maddpg.common.tf_util as U
 from experiments.env0 import log0 as Log
 from experiments.env0.data_collection0 import Env
@@ -141,12 +132,12 @@ def test(arglist, log,full_load_dir,test_iteration):
         f.close()
 
         f = open('test_params.txt', 'w')
-        for variable_name in tf1.global_variables():
+        for variable_name in tf.global_variables():
             print(variable_name,file=f)
         f.close()
 
         # TODO:加载已经训练好的模型
-        saver = tf1.train.Saver()
+        saver = tf.train.Saver()
         saver.restore(sess, full_load_dir)
 
         episode_rewards = [0.0]   # sum of rewards for all agents
@@ -288,7 +279,7 @@ def test(arglist, log,full_load_dir,test_iteration):
         log.log(details)
         log.log(indicator)
 
-    tf1.reset_default_graph()
+    tf.reset_default_graph()
     return indicator_to_pandas
 
 if __name__ == '__main__':
