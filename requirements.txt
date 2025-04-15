@@ -9,3 +9,4 @@ panel
 pyviz-comms
 pandas
 tensorboard
+opencv-python
